@@ -14,6 +14,7 @@ Bu script'in henüz yapmadığı şeyler (sıradaki parçalarda eklenecek):
 import os
 import sys
 import time
+import base64
 import urllib.parse
 import urllib.request
 import json
@@ -36,16 +37,23 @@ MAX_POLL_ATTEMPTS = 20
 
 
 def get_canva_access_token():
-    """Refresh token'ı kullanarak taze bir access token alır."""
+    """Refresh token'ı kullanarak taze bir access token alır.
+
+    Canva'nın token endpoint'i kimlik bilgilerini body parametresi olarak
+    değil, HTTP Basic Auth header'ında bekliyor (resmi önerilen yöntem).
+    """
+    credentials = base64.b64encode(
+        f"{CANVA_CLIENT_ID}:{CANVA_CLIENT_SECRET}".encode("utf-8")
+    ).decode("ascii")
+
     data = urllib.parse.urlencode({
         "grant_type": "refresh_token",
         "refresh_token": CANVA_REFRESH_TOKEN,
-        "client_id": CANVA_CLIENT_ID,
-        "client_secret": CANVA_CLIENT_SECRET,
     }).encode("ascii")
 
     req = urllib.request.Request(CANVA_TOKEN_URL, data=data, method="POST")
     req.add_header("Content-Type", "application/x-www-form-urlencoded")
+    req.add_header("Authorization", f"Basic {credentials}")
 
     with urllib.request.urlopen(req) as response:
         result = json.loads(response.read().decode("utf-8"))
