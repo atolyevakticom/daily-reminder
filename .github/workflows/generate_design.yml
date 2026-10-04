@@ -1,0 +1,29 @@
+name: Canva Görsel Oluşturma
+
+on:
+  workflow_dispatch: {}  # şimdilik sadece elle çalıştırılabilir, otomatik zamanlama yok
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repo'yu indir
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Bağımlılıkları yükle
+        run: pip install -r requirements.txt
+
+      - name: Görsel oluşturma scriptini çalıştır
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          CANVA_CLIENT_ID: ${{ secrets.CANVA_CLIENT_ID }}
+          CANVA_CLIENT_SECRET: ${{ secrets.CANVA_CLIENT_SECRET }}
+          CANVA_REFRESH_TOKEN: ${{ secrets.CANVA_REFRESH_TOKEN }}
+          CANVA_TEMPLATE_ID: ${{ secrets.CANVA_TEMPLATE_ID }}
+        run: python generate_design.py
